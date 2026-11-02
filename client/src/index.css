@@ -1,0 +1,11 @@
+@font-face {
+  font-family: 'displayFont'; /* El nombre que le quieras dar */
+  src: url('./assets/fonts/displayFont.ttf') format('ttf'); /* Ruta al archivo */
+  font-weight: 400; /* 400 es el peso para 'normal' */
+  font-style: normal;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+

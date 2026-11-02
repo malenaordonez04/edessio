@@ -1,0 +1,148 @@
+import { useEffect, useMemo, useState } from "react";
+import { useSelector } from "react-redux";
+import axios from "axios";
+
+import { type RootState } from "../app/store";
+// import { login, updateUser } from "../features/auth/authSlice";
+
+import { MdEdit } from "react-icons/md";
+import type { Tutor } from "../types";
+
+import Modal from "../components/Modal";
+import EditProfileForm from "../components/EditProfileForm";
+import Alert from "../components/Alert";
+
+import { translateModality } from "../utils/textFormatters";
+
+
+const ProfilePage = () => {
+    //Leemos los datos del usuario desde Redux para mostrarlos.
+   const {token, user: authUser} = useSelector((state: RootState) => state.auth);
+
+   //Estados para los datos actualizados del perfil
+   const [profile, setProfile] = useState<Tutor | null>(null);
+   const [loading, setLoading] = useState(true);
+
+
+   //Estados para el modal y la alerta.
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isAlertVisible, setIsAlertVisible] = useState(true); 
+
+
+    //Función para buscar el perfil actualizado.
+    const fetchProfile = async () => {
+        if (!token) return;
+        try {
+            const config = {headers: {Authorization : `Bearer ${token}`}};
+            const response = await axios.get('http://localhost:5001/api/profile', config);
+            setProfile(response.data); //Guardamos los datos actualizados.
+        } catch (error) {
+            console.error('Error al cargar el perfil', error);
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    //Función para cargar los datos cuando la página abre.
+    useEffect(() => {
+        fetchProfile();
+    }, [token]); //Se ejecuta cuando se encuentra el token.
+
+
+    //Función para manejar la actualización
+    const handleProfileUdpate = (updatedUser: Tutor) => {
+        setProfile(updatedUser); //Actualzia el estado local inmediatamente.
+        setIsModalOpen(false);
+    }
+
+    //Verificamos si la información del usuario esta incompleta para determinar si hace falta mostrar el alert.
+    const isProfileIncomplete = useMemo(() => {
+        if (!profile) return false; //Verificamos que exista usuario.
+
+        const hasNoBioOrPicture =  !profile.bio || !profile.profilePicture //Verifica si no hay bio o picture.
+
+        //Usamos authUser ya que eso es fijo y datos de profile(Cambian).
+        const isTutorWithNoSubjects = authUser?.role === 'tutor' && (!profile.subjects || profile.subjects.length === 0); //Verifica que si es profesor, si tiene materias o no.
+
+        return hasNoBioOrPicture || isTutorWithNoSubjects //Se devuelve un booleano true si cualquiera de las dos condiciones se cumple.
+
+    }, [profile, authUser]) //[user]. Solo se vuelve a ejecutar la función si se cambia algo en user. Si no, useMemo recuerda el estado anterior. 
+
+    if (loading) return <div className="text-center mt-10">Cargando perfil...</div>
+    if (!profile) return <div className="text-center mt-10">No se pudo cargar el perfil.</div>
+
+    return(
+        <div className="mt-6">
+            {/* Solo si isProfileIncomplete y isAlertVisible(que el usuario no la haya cerrado) son true, se muestra la alerta.*/}
+            {isProfileIncomplete && isAlertVisible && (
+                <div className="mb-6">
+                    <Alert
+                    message={
+                        authUser?.role === 'tutor'
+                        ? 'Añadir una biografía, foto y tus materias va a ayudar a que los estudiantes te encuentren.'
+                        : 'Añadir una biografía y una foto de perfil va a hacer que tu perfil se vea mejor.'
+                    }
+                    onDismiss={() => setIsAlertVisible(false)}
+                    />
+                </div>
+            )}
+                {profile ? (
+                    <div className="flex flex-col items-center space-x-6">
+                        <img 
+                        src={profile.profilePicture || `https://i.pravatar.cc/150?u=${profile.email}`} 
+                        alt={`Foto de perfil de ${profile.name}`}
+                        className="h-48 w-48 rounded-full object-cover" 
+                        />
+                        <div className="w-[85%] mt-6">
+                            <div className="flex justify-between border px-4 py-2 rounded-full">
+                                <h2 className="text-2xl font-medium ">Mis datos</h2>
+                                <button
+                                className="px-4 py-2 bg-secondary text-primary rounded-full hover:bg-primary hover:text-accent"
+                                onClick={() => setIsModalOpen(true)}
+                                >
+                                <MdEdit />
+                                </button>
+                            </div>
+                            <div className="space-y-4 mt-4">
+                                <div className="flex justify-between">
+                                    <p className="font-light"><a className="font-bold">Nombre:</a> {profile.name}</p>      
+                                    <p className="font-light"><a className="font-bold">Localidad:</a> {profile.location || 'No especificada'}</p>
+                                </div>
+                            <p className="font-light"> <a className="font-bold">Email:</a> {profile.email}</p>
+                            {authUser?.role === 'tutor' && (
+                                <div>
+                                    <div className="flex flex-col gap-3">
+                                        <p className="font-light"> <a className="font-bold">Precio:</a> {profile.price}</p>
+                                        <p className="font-light"> <a className="font-bold">Modalidad:</a> {translateModality(profile.modality)}</p>
+                                        <div>
+                                            <h3 className="font-bold">Mis Materias:</h3>
+                                            {profile.subjects && profile.subjects.length > 0 ? (
+                                            <div className="flex flex-wrap gap-2 mt-2">
+                                                {profile.subjects.map((subject: any, index: number) => (
+                                                <span key={index} className="border border-secondary text-primary text-sm font-medium px-4 py-2 rounded-full">
+                                                    {/* Manejo seguro: si es objeto usa .name, si es string usa el string */}
+                                                    {typeof subject === 'string' ? subject : subject.name}
+                                                </span>
+                                            ))}
+                                            </div>
+                                            ) : (
+                                            <p>No has añadido ninguna materia.</p>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                                )}
+                            </div>
+                        </div>
+                        </div>
+                ) : (
+                    <p>Cargando datos del perfil...</p>
+                )}
+                <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+                    <EditProfileForm onClose={() => setIsModalOpen(false)} onProfileUpdate={handleProfileUdpate} currentProfile={profile!}/>
+                </Modal>
+        </div>
+    );
+};
+
+export default ProfilePage;

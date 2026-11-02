@@ -1,0 +1,15 @@
+- Cambiar la ruta de localhost que le pasamos como paraemtro a axios en los registros de usuario asi cuando depleguemos la pagina a internet, no de error.
+
+- Fijarse de pasar como parametro los estilos a los input.
+
+- Que si hay error en el logueo o registro, que avise especificamente que pasa. Ej: si la contraseña no matchea con el mail, que especifique.
+
+-Verificar mejor manera UX/UI de mostrar mensajes de exito o de error. Ej: Mensaje abajo del form diciendo la acción, algo que flote en la pantalla, etc.
+
+-Como hago para solucionar el problema de que el token dura solo 1 dia? Porq si se supera ese tiempo y el usuario ya no “funciona” tengo que avisar o directamente desloguear al usuario.
+
+-Sigue sin recordar que materias estas tickeadas en la parte de actualizar el perfil del profesor.
+
+- En starRating de tutorCard esta fijado el average. Eso tiene que cambiar.
+
+-Video explicando los middlewares.

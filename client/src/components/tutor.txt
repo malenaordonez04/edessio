@@ -1,0 +1,28 @@
+ {user ? (
+              <>
+                {user.role === 'tutor' && (
+                  <Link to="/tutor" className="text-white hover:text-accent">Mi Dashboard</Link>
+                )}
+                {user.role === 'student' && (
+                  <Link to="/find-tutor" className="text-white hover:text-accent hover:border-b border-accent">Buscar Profesores</Link>
+                )}
+
+                <Link to='/profile' className="text-white hover:text-accent hover:border-b border-accent">Mi Perfil</Link>
+                <button
+                  onClick={handleLogout}
+                  className="px-3 py-2 rounded-md text-sm font-medium text-white bg-transparent border border-accent hover:bg-accent hover:text-primary transition duration-300 ease-in-out"
+                >
+                  Cerrar Sesión
+                </button>
+              </>
+            ) : (
+              // 6. Si el usuario NO EXISTE (no ha iniciado sesión)
+              <>
+                <Link to="/login" className="px-3 py-2 rounded-md text-md font-medium text-white hover:border border-accent">
+                  Iniciar Sesión
+                </Link>
+                <Link to="/register" className="px-3 py-2 rounded-md text-md font-medium text-primary bg-secondary hover:bg-accent transition duration-300 ease-in-out">
+                  Registrarse
+                </Link>
+              </>
+            )}
