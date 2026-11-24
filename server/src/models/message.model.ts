@@ -27,7 +27,7 @@ const messageSchema = new Schema(
     }
 );
 
-const Message = model('Messsage', messageSchema);
+const Message = model('Message', messageSchema);
 
 export default Message;
 

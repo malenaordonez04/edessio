@@ -8,6 +8,8 @@ export interface Tutor{
     subjects?: string[];
     price?: number;
     modality?: 'in-person' | 'hybrid' | 'remote',
+    averageRating?: number;
+    reviewCount?: number;
 };
 
 export interface ISubject {

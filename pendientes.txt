@@ -1,15 +1,32 @@
 - Cambiar la ruta de localhost que le pasamos como paraemtro a axios en los registros de usuario asi cuando depleguemos la pagina a internet, no de error.
 
-- Fijarse de pasar como parametro los estilos a los input.
-
 - Que si hay error en el logueo o registro, que avise especificamente que pasa. Ej: si la contraseña no matchea con el mail, que especifique.
-
--Verificar mejor manera UX/UI de mostrar mensajes de exito o de error. Ej: Mensaje abajo del form diciendo la acción, algo que flote en la pantalla, etc.
 
 -Como hago para solucionar el problema de que el token dura solo 1 dia? Porq si se supera ese tiempo y el usuario ya no “funciona” tengo que avisar o directamente desloguear al usuario.
 
--Sigue sin recordar que materias estas tickeadas en la parte de actualizar el perfil del profesor.
-
-- En starRating de tutorCard esta fijado el average. Eso tiene que cambiar.
-
 -Video explicando los middlewares.
+
+De la home -  Coordinar tarjetas (colores y espaciado entre pastillas). Ver que hacer con el remarcado de 100% garantia. Tambien hay que arreglar colores y detalles del Mi perfil para que todo coincida.
+
+Investigar si es buena practica o se recomienda altamente el poner un buscador en el header. 
+Chequear que hay que agregar el footer en todas las vistas.
+Sacar el link de 
+
+Hacer que si hay mensajes nuevos, aparezca un globito diciendo cuantos mensjaes nuevos hay. creo q no funciona todavia
+
+
+En el chattab hay que arreglar que en modo mobile, no se termina de diferenciar la parte del chat en si con la lista de contactos.
+
+Hay que verificar si en la home podes darle al boton de quiero dar clases y registrarse ya estando logueada. 
+
+Cuando mandas una reseña, el mensaje de exito aparece al costado y queda feo. 
+
+en registrarse, hay que actualizar las modalidades que quedaron mal.
+
+En ubicacion chequear si hay una manera facil de cambiar lo de ubicacion ya que puedo poner cualquiera.
+
+actualizar los colores de las pildoras de registrasre e iniciar sesion
+
+En el home donde dice los pasos, actualizar los textos pq por ej lo de pedir clase esta mal explicado
+
+

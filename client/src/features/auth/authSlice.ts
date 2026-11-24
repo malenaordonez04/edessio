@@ -2,6 +2,7 @@ import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
 //El slice de autenticación se ocupa de manejar la información del user y su respectivo token de sesión. 
 interface UserState {
+    _id: string;
     email: string | null;
     name: string | null;
     role: string | null;

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useSelector} from "react-redux";
 import axios from "axios";
 import type { RootState } from "../app/store";
@@ -9,10 +9,13 @@ import type { Tutor, Review } from "../types";
 import ReviewCard from "../components/ReviewCard";
 import ReviewForm from "../components/ReviewForm";
 import StarRating from "../components/StarRating";
+import TutorAvailabilitySection from "../components/TutorAvailabilitySection";
 
 const TutorProfilePage = () => {
     //Usamos el hook useParams para obtener el parámetro ID de la URL.
-    const { id } = useParams<{ id: string }>(); 
+    const { id } = useParams<{ id: string }>();
+    const navigate = useNavigate();
+
     //Estados para guardar los datos del profesor y el estado de carga.
     const [tutor, setTutor] = useState< Tutor | null>(null);
     const [loading, setLoading] = useState(true);
@@ -62,6 +65,19 @@ const TutorProfilePage = () => {
     useEffect(() => {
       fetchReviews();
     }, [id]); //Se ejecuta cada vez que el ID cambia
+
+    //Funcion para abrir el chat con este profesor
+    const handleContactTutor = () => {
+      if (!user) {
+        navigate("/login");
+        return
+      }
+      if (!tutor) return 
+
+      //Guardamos el ID del profesor para que profilePage y chatTab abran su conversación
+      localStorage.setItem("activeChatTutorId", tutor._id);
+      navigate("/profile");
+    }
 
     if (loading) return <p className="text-center mt-10">Cargando perfil...</p>;
     if(!tutor) return <p className="text-center mt-10">No se encontró al profesor.</p>
@@ -155,10 +171,15 @@ const TutorProfilePage = () => {
 
           <div className="mt-12">
             <h3 className="text-2xl font-semibold text-gray-800 text-left ml-4">Disponibilidad</h3>
+            <TutorAvailabilitySection tutorId={tutor._id} subjects={tutor.subjects} />
           </div>
-          
+
           <div className="sticky bottom-0 z-50 my-4">
-            <button className="w-[90%] bg-secondary hover:bg-primary hover:text-accent p-4 rounded-full transition duration-300 ease-in-out mb-4">Contactá al profesor</button>
+            <button 
+            onClick={handleContactTutor}
+            className="w-[90%] bg-secondary hover:bg-primary hover:text-accent p-4 rounded-full transition duration-300 ease-in-out mb-4"
+            >
+              Contactá al profesor</button>
           </div>
         </div>
       </div>
