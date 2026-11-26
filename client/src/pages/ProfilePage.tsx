@@ -156,7 +156,10 @@ const ProfilePage = () => {
                         {activeTab === "dashboard" && <DashboardTab setActiveTab={handleTabChange} />}
 
                         {activeTab === "agenda" && (
-                            <AgendaTab onBookingsSeen={() => setUnreadBookingsCount(0)} />
+                        <AgendaTab
+                            onBookingsSeen={() => setUnreadBookingsCount(0)}
+                            setActiveTab={handleTabChange}
+                        />
                         )}
 
                         {activeTab === "availability" && <AvailabilityTab tutorId={profile._id} />}

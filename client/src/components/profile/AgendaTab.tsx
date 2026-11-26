@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import axios from "axios";
 import type { RootState } from "../../app/store";
-import { MdCalendarToday, MdCheck, MdClose, MdInfoOutline } from "react-icons/md";
+import { MdCalendarToday, MdCheck, MdClose, MdInfoOutline, MdMessage } from "react-icons/md";
 
 interface BookingItem {
     _id: string;
@@ -32,6 +32,8 @@ interface BookingItem {
 interface AgendaTabProps {
     // Callback opcional para avisarle a ProfilePage que apague el globito rojo del menú lateral
     onBookingsSeen?: () => void;
+    // Función para cambiar a la pestaña de mensajes al tocar "Enviar mensaje"
+    setActiveTab?: (tab: string) => void;
 }
 
 const formatShortDate = (dateStr: string): string => {
@@ -40,7 +42,7 @@ const formatShortDate = (dateStr: string): string => {
     return `${day}/${month}`;
 };
 
-const AgendaTab: React.FC<AgendaTabProps> = ({ onBookingsSeen }) => {
+const AgendaTab: React.FC<AgendaTabProps> = ({ onBookingsSeen, setActiveTab }) => {
     const { token, user } = useSelector((state: RootState) => state.auth);
     const [bookings, setBookings] = useState<BookingItem[]>([]);
     const [loading, setLoading] = useState(true);
@@ -83,6 +85,21 @@ const AgendaTab: React.FC<AgendaTabProps> = ({ onBookingsSeen }) => {
         fetchAndMarkSeen();
     }, [token]);
 
+    // Abre ChatTab directamente con la persona de esa reserva
+    const handleOpenChat = (counterpart?: { _id: string; name: string; profilePicture?: string }) => {
+        if (!counterpart?._id || !setActiveTab) return;
+        localStorage.setItem(
+            "activeChatContact",
+            JSON.stringify({
+                _id: counterpart._id,
+                name: counterpart.name,
+                profilePicture: counterpart.profilePicture,
+                role: isTutor ? "student" : "tutor"
+            })
+        );
+        setActiveTab("messages");
+    };
+
     // Cambia el estado de la reserva (confirmar, rechazar con motivo o cancelar post-confirmación)
     const handleStatusChange = async (
         bookingId: string,
@@ -111,14 +128,12 @@ const AgendaTab: React.FC<AgendaTabProps> = ({ onBookingsSeen }) => {
             await axios.delete(`http://localhost:5001/api/bookings/${bookingId}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
-            // La quitamos de la vista; al profesor nunca le aparecerá
             setBookings((prev) => prev.filter((b) => b._id !== bookingId));
         } catch (error) {
             console.error("Error al eliminar solicitud pendiente:", error);
         }
     };
 
-    // Etiqueta de color según los 4 estados posibles
     const getStatusBadge = (status: BookingItem["status"]) => {
         switch (status) {
             case "confirmed":
@@ -150,7 +165,6 @@ const AgendaTab: React.FC<AgendaTabProps> = ({ onBookingsSeen }) => {
                 <div className="space-y-4">
                     {bookings.map((booking) => {
                         const counterpart = isTutor ? booking.student : booking.tutor;
-                        // Detectamos si esta tarjeta específica era una novedad sin leer al abrir la pestaña
                         const wasUnread = isTutor ? !booking.seenByTutor : !booking.seenByStudent;
                         const isEditingReason = activeReasonBox?.bookingId === booking._id;
 
@@ -196,7 +210,20 @@ const AgendaTab: React.FC<AgendaTabProps> = ({ onBookingsSeen }) => {
                                         </div>
                                     </div>
 
-                                    <div className="flex items-center gap-3 self-end sm:self-center">
+                                    <div className="flex flex-wrap items-center gap-2.5 self-end sm:self-center">
+                                        {/* Botón directo para abrir chat con el alumno o profesor */}
+                                        {setActiveTab && counterpart?._id && (
+                                            <button
+                                                type="button"
+                                                onClick={() => handleOpenChat(counterpart)}
+                                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700 hover:bg-primary hover:text-white transition-colors cursor-pointer"
+                                                title="Enviar mensaje"
+                                            >
+                                                <MdMessage className="h-3.5 w-3.5" />
+                                                <span>Mensaje</span>
+                                            </button>
+                                        )}
+
                                         {getStatusBadge(booking.status)}
 
                                         {/* ACCIONES DEL PROFESOR cuando la solicitud está pendiente */}

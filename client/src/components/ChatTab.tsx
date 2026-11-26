@@ -20,14 +20,12 @@ interface Contact {
     role: string;
 }
 
-// 1. Declaramos las props que recibe desde ProfilePage
 interface ChatTabProps {
     currentUserId?: string;
 }
 
 const ChatTab: React.FC<ChatTabProps> = ({ currentUserId }) => {
     const { token, user } = useSelector((state: RootState) => state.auth);
-    // Usamos el ID del perfil cargado en ProfilePage o el de Redux como respaldo
     const myId = currentUserId || (user as any)?._id;
 
     const [socket, setSocket] = useState<Socket | null>(null);
@@ -50,14 +48,15 @@ const ChatTab: React.FC<ChatTabProps> = ({ currentUserId }) => {
         });
 
         newSocket.on("online_users", (users: string[]) => {
-            setOnlineUsers(users)
-        })
+            setOnlineUsers(users);
+        });
+
         return () => {
             newSocket.disconnect();
         };
     }, [myId]);
 
-    // Cargar la lista de contactos + detectar si venimos de "Contactá al profesor"
+    // Cargar lista de contactos y abrir conversación directa si venimos desde Dashboard, Agenda o TutorProfilePage
     useEffect(() => {
         const fetchConversations = async () => {
             if (!token) return;
@@ -68,9 +67,27 @@ const ChatTab: React.FC<ChatTabProps> = ({ currentUserId }) => {
 
                 let chats: Contact[] = res.data;
 
-                // 2. Revisamos si el usuario tocó "Contactá al profesor" en TutorProfilePage
+                // Caso A: Venimos desde DashboardTab o AgendaTab (funciona tanto para alumnos como para profesores)
+                const pendingContactRaw = localStorage.getItem("activeChatContact");
+                // Caso B: Venimos desde TutorProfilePage ("Contactá al profesor")
                 const pendingTutorId = localStorage.getItem("activeChatTutorId");
-                if (pendingTutorId) {
+
+                if (pendingContactRaw) {
+                    localStorage.removeItem("activeChatContact");
+                    try {
+                        const targetContact: Contact = JSON.parse(pendingContactRaw);
+                        const existingChat = chats.find((c) => c._id === targetContact._id);
+
+                        if (existingChat) {
+                            setSelectedContact(existingChat);
+                        } else {
+                            chats = [targetContact, ...chats];
+                            setSelectedContact(targetContact);
+                        }
+                    } catch (e) {
+                        console.error("Error al leer activeChatContact:", e);
+                    }
+                } else if (pendingTutorId) {
                     localStorage.removeItem("activeChatTutorId");
                     const existingChat = chats.find((c) => c._id === pendingTutorId);
 
@@ -175,13 +192,13 @@ const ChatTab: React.FC<ChatTabProps> = ({ currentUserId }) => {
                             No tenés conversaciones activas todavía. Buscá un profesor y enviale un mensaje desde su perfil.
                         </div>
                     ) : (
-                 conversations.map((contact) => {
+                        conversations.map((contact) => {
                             const isOnline = onlineUsers.includes(contact._id);
                             return (
                                 <button
                                     key={contact._id}
                                     onClick={() => setSelectedContact(contact)}
-                                    className={`w-full p-4 flex items-center gap-3 text-left transition-colors ${
+                                    className={`w-full p-4 flex items-center gap-3 text-left transition-colors cursor-pointer ${
                                         selectedContact?._id === contact._id
                                             ? "bg-blue-50/80 border-l-4 border-primary"
                                             : "hover:bg-gray-100/60 bg-white"
@@ -299,7 +316,7 @@ const ChatTab: React.FC<ChatTabProps> = ({ currentUserId }) => {
                             <button
                                 type="submit"
                                 aria-label="Enviar mensaje"
-                                className="bg-primary text-white p-2.5 rounded-full hover:opacity-90 transition-opacity flex items-center justify-center"
+                                className="bg-primary text-white p-2.5 rounded-full hover:opacity-90 transition-opacity flex items-center justify-center cursor-pointer"
                             >
                                 <MdSend className="h-5 w-5" />
                             </button>

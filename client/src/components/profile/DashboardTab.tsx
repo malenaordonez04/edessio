@@ -81,6 +81,21 @@ const DashboardTab: React.FC<DashboardTabProps> = ({ setActiveTab }) => {
         fetchDashboardData();
     }, [token]);
 
+    // Guarda el contacto de la reserva y abre ChatTab directo en su conversación
+    const handleOpenChat = (counterpart?: { _id: string; name: string; profilePicture?: string }) => {
+        if (!counterpart?._id) return;
+        localStorage.setItem(
+            "activeChatContact",
+            JSON.stringify({
+                _id: counterpart._id,
+                name: counterpart.name,
+                profilePicture: counterpart.profilePicture,
+                role: isTutor ? "student" : "tutor"
+            })
+        );
+        setActiveTab("messages");
+    };
+
     // Filtramos solo las clases confirmadas cuya fecha sea hoy o futura, ordenadas cronológicamente
     const upcomingConfirmed = bookings
         .filter((b) => b.status === "confirmed" && b.date >= todayStr)
@@ -222,10 +237,11 @@ const DashboardTab: React.FC<DashboardTabProps> = ({ setActiveTab }) => {
 
                                     <button
                                         type="button"
-                                        onClick={() => setActiveTab("messages")}
-                                        className="self-start sm:self-center px-4 py-1.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700 hover:bg-primary hover:text-white transition-colors cursor-pointer"
+                                        onClick={() => handleOpenChat(counterpart)}
+                                        className="self-start sm:self-center inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700 hover:bg-primary hover:text-white transition-colors cursor-pointer"
                                     >
-                                        Enviar mensaje
+                                        <MdMessage className="h-3.5 w-3.5" />
+                                        <span>Enviar mensaje</span>
                                     </button>
                                 </div>
                             );
